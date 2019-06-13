@@ -1,0 +1,25 @@
+version: "3.7"
+services: 
+  app:
+    build:
+      context: .
+      args:
+        JAR_FILE: "target/app.jar"
+    container_name: portal-backend
+    ports:
+      - "8080:8080"
+    links:
+      - mongo
+    environment:
+      MONGO_URI: mongodb://root:root@db-mongo:27017/portal
+  
+  mongo:
+    # https://hub.docker.com/_/mongo?tab=description
+    image: mongo:4.1
+    container_name: db-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
