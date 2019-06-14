@@ -11,11 +11,11 @@ services:
     links:
       - mongo
     environment:
-      MONGO_URI: mongodb://root:root@db-mongo:27017/portal
+      MONGO_URI: mongodb://root:root@db-mongo:27017
   
   mongo:
     # https://hub.docker.com/_/mongo?tab=description
-    image: mongo:4.1
+    image: mongo:latest
     container_name: db-mongo
     restart: always
     ports:

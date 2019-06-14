@@ -2,7 +2,8 @@
 spring:
   data:
     mongodb:
-      uri: ${MONDO_URI:mongodb://root:root@localhost:27017/portal}
+      uri: ${MONDO_URI:mongodb://portal:portal@localhost:27017}/portal
+      
   jpa:
     hibernate:
       ddl-auto: update
