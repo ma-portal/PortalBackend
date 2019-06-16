@@ -10,6 +10,4 @@ public interface UserRepos extends MongoRepository<User, ObjectId> {
 
     User findByAccount(String account);
 
-    String findAvatarByAccount(String account);
-
 }

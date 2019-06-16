@@ -1,5 +1,7 @@
 package org.luncert.portal.config;
 
+import org.luncert.portal.component.SecurityAuthFailureHandler;
+import org.luncert.portal.component.SecurityAuthSuccessHandler;
 import org.luncert.portal.component.SecurityUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.cors.CorsUtils;
 
 @Configuration
 @EnableWebSecurity
@@ -27,18 +30,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
         auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
     }
 
+    
+    @Autowired
+    private SecurityAuthSuccessHandler authSuccessHandler;
+    
+    @Autowired
+    private SecurityAuthFailureHandler authFailureHandler;
+    
     @Override
 	protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
+        // http.cors().disable();
         http.authorizeRequests()
-            .antMatchers(HttpMethod.GET, "/register").permitAll()
+            .antMatchers(HttpMethod.GET, "/user/avatar/*").permitAll()
             .anyRequest().authenticated()
+            .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+            .and().cors()
+            .and().csrf().disable().authorizeRequests()
+            // .and().httpBasic();
             .and()
-                .formLogin().loginProcessingUrl("/user/signin")
+                .formLogin()
+                .loginProcessingUrl("/user/signin")
                 .usernameParameter("account")
                 .passwordParameter("password")
-            .and()
-                .csrf().disable();
+                .successHandler(authSuccessHandler)
+                .failureHandler(authFailureHandler);
 	}
 
     @Bean

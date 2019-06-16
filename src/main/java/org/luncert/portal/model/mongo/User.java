@@ -3,6 +3,8 @@ package org.luncert.portal.model.mongo;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,19 +26,23 @@ public class User implements Serializable
     private static final long serialVersionUID = -7479078315947463787L;
 
     @Id
+    @JsonIgnore
     ObjectId id;
     
     private String account;
+
+    @JsonIgnore
     private String password;
     private List<Role> roles;
     private String realName;
-    private int classOf;
-    private long joinTime;
+    private Integer classOf;
+    private Long joinTime;
     private String description;
     private List<String> tags;
     private String email;
     private String qq;
     private String phone;
     private String avatar;
+    private Long lastAccess;
 
 }

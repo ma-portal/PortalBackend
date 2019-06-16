@@ -1,5 +1,8 @@
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
+
   data:
     mongodb:
       uri: ${MONDO_URI:mongodb://portal:portal@localhost:27017}/portal
@@ -7,3 +10,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
+server:
+  port: 8000
+
+github:
+  client:
+    clientId: 090de64bbf77d3c11abd158643ffa3c68574ca5fa470346f2eefd51de615ecfc
+    clientSecret: 54b82ee69632ed5c6098773468f252c056b8d61b969f14ae7ba23d3ab2da6de9
+    redirectUri: http://localhost:8080/
+    authorizeUri: http://localhost:8080/oauth/authorize?client_id={$clientId}&redirect_uri={redirectUri}&response_type=code&state=AXONINOIJOIJOIASD
+    clientAuthenticationScheme: basic
