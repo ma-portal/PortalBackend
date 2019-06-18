@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +36,17 @@ public class UserService {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    public String getCurrentAccount() {
+        return org.springframework.security.core.userdetails.User.class.cast
+        (SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+    }
+
     public User queryUser(String account) {
         return userRepos.findByAccount(account);
+    }
+
+    public User getCurrentUser() {
+        return queryUser(getCurrentAccount());
     }
 
     @Autowired
@@ -46,7 +56,7 @@ public class UserService {
         User user = User.builder()
             .account(account)
             .password(passwordEncoder.encode(password))
-            .roles(Collections.singletonList(Role.Normal))
+            .roles(Collections.singleton(Role.Normal))
             .build();
         userRepos.save(user);
     }
@@ -69,9 +79,8 @@ public class UserService {
             User.class);
     }
 
-    public void updateProfile(String account, String data) throws Exception {
+    public void updateProfile(User user, String data) throws Exception {
         JSONObject updates = JSONObject.parseObject(data);
-        User user = queryUser(account);
         for (String key : updates.keySet()) {
             switch(key) {
             case "password":

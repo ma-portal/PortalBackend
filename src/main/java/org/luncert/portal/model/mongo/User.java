@@ -2,6 +2,7 @@ package org.luncert.portal.model.mongo;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -15,8 +16,7 @@ import lombok.Data;
 @Data
 @Builder
 @Document(collection = "User")
-public class User implements Serializable
-{
+public class User implements Serializable {
 
     public enum Role {
         Admin,
@@ -33,7 +33,7 @@ public class User implements Serializable
 
     @JsonIgnore
     private String password;
-    private List<Role> roles;
+    private Set<Role> roles;
     private String realName;
     private Integer classOf;
     private Long joinTime;

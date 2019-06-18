@@ -4,17 +4,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 import com.alibaba.fastjson.JSONObject;
 
 import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.User;
+import org.luncert.portal.model.mongo.User.Role;
+import org.luncert.portal.repos.mongo.UserRepos;
 import org.luncert.portal.service.UserService;
 import org.luncert.portal.util.NormalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +32,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepos userRepos;
+
     @GetMapping("/avatar/{account}")
     public JSONObject getAvatar(@PathVariable("account") String account) {
         JSONObject json = new JSONObject();
@@ -38,14 +44,14 @@ public class UserController {
 
     @GetMapping("/profile")
     public User getProfile() {
-        return userService.queryUser(getCurrentAccount());
+        return userService.getCurrentUser();
     }
 
     @PutMapping
     public ResponseEntity<JSONObject> updateProfile(@RequestBody String data) {
         JSONObject ret = new JSONObject();
         try {
-            userService.updateProfile(getCurrentAccount(), data);
+            userService.updateProfile(userService.getCurrentUser(), data);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
             ret.put("errmsg", NormalUtil.throwableToString(e));
@@ -53,14 +59,44 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasAuthority('Admin')")
     @PostMapping("/role/{roleName}")
-    public void addRole() {
-
+    public ResponseEntity<JSONObject> addRole(String tarAccount, @PathVariable("roleName") Role role) {
+        return updateRoles(tarAccount, role, true);
     }
 
+    @PreAuthorize("hasAuthority('Admin')")
     @DeleteMapping("/role/{roleName}")
-    public void removeRole() {
+    public ResponseEntity<JSONObject> removeRole(String tarAccount, @PathVariable("roleName") Role role) {
+        return updateRoles(tarAccount, role, false);
+    }
 
+    private ResponseEntity<JSONObject> updateRoles(String account, Role role, boolean addRole) {
+        JSONObject errMsg = new JSONObject();
+        User user = userService.queryUser(account);
+        if (user == null) {
+            errMsg.put("errmsg", "invalid account");
+            return new ResponseEntity<>(errMsg, HttpStatus.BAD_REQUEST);
+        } else {
+            Set<Role> roles = user.getRoles();
+            if (addRole) {
+                if (roles.contains(role)) {
+                    errMsg.put("errmsg", "role exists");
+                } else {
+                    roles.add(role);
+                    userRepos.save(user);
+                }
+            } else {
+                if (!roles.contains(role)) {
+                    errMsg.put("errmsg", "role not exists");
+                } else {
+                    roles.remove(role);
+                    userRepos.save(user);
+                }
+            }
+            return new ResponseEntity<>(errMsg,
+                errMsg.containsKey("errmsg") ? HttpStatus.BAD_REQUEST : HttpStatus.ACCEPTED);
+        }
     }
 
     /**
@@ -70,9 +106,9 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('Admin')")
     @PostMapping
-    public ResponseEntity<Object> addUser(@RequestParam String account) {
-        User user = userService.queryUser(account);
+    public ResponseEntity<JSONObject> addUser(@RequestParam String account) {
         JSONObject json = new JSONObject();
+        User user = userService.queryUser(account);
         if (user != null) {
             json.put("errmsg", "account existed");
             return new ResponseEntity<>(json, HttpStatus.BAD_REQUEST);
@@ -86,9 +122,12 @@ public class UserController {
 
     }
 
-    private String getCurrentAccount() {
-        return org.springframework.security.core.userdetails.User.class.cast
-        (SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+    @GetMapping("/project")
+    public void getProject() {
+    }
+
+    @GetMapping("/gitlab/redirect")
+    public void gitlabAuth(String code, String state) {
     }
 
 }

@@ -36,18 +36,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     
     @Autowired
     private SecurityAuthFailureHandler authFailureHandler;
-    
+
     @Override
 	protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
+        
         // http.cors().disable();
+        
         http.authorizeRequests()
             .antMatchers(HttpMethod.GET, "/user/avatar/*").permitAll()
             .anyRequest().authenticated()
             .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
             .and().cors()
             .and().csrf().disable().authorizeRequests()
-            // .and().httpBasic();
             .and()
                 .formLogin()
                 .loginProcessingUrl("/user/signin")
@@ -55,6 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .passwordParameter("password")
                 .successHandler(authSuccessHandler)
                 .failureHandler(authFailureHandler);
+        
+        http.sessionManagement(); // https://blog.csdn.net/u013435893/article/details/79704970
 	}
 
     @Bean

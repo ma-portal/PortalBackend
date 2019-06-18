@@ -10,8 +10,10 @@ services:
       - "8080:8080"
     links:
       - mongo
+      - redis
     environment:
       MONGO_URI: mongodb://root:root@db-mongo:27017
+      REDIS_URI: db-redis:6379
   
   mongo:
     # https://hub.docker.com/_/mongo?tab=description
@@ -23,3 +25,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
+
+  redis:
+    image: redis:latest
+    container_name: db-redis
+    ports:
+      - "6379:6379"

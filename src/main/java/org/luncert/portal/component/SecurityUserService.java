@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class SecurityUserService implements UserDetailsService {
@@ -31,7 +32,7 @@ public class SecurityUserService implements UserDetailsService {
             throw new AuthenticationCredentialsNotFoundException("invalid account");
         }
 
-        List<Role> roles = user.getRoles();
+        Set<Role> roles = user.getRoles();
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         if (roles != null) {
             for (Role role : roles) {
