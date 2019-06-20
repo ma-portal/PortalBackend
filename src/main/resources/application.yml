@@ -9,17 +9,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-  security:
-    oauth2:
-      client:
-        registration:
-          gitlab:
-            client-name: PortalBackend
-            client-id: 090de64bbf77d3c11abd158643ffa3c68574ca5fa470346f2eefd51de615ecfc
-            client-secret: 54b82ee69632ed5c6098773468f252c056b8d61b969f14ae7ba23d3ab2da6de9
-            scope: api,read_user
-            # http://localhost:8080/oauth/authorize?client_id={$clientId}&redirect_uri={redirectUri}&response_type=code&state=AXONINOIJOIJOIASD
 
 gitlab:
-  server:
-    uri: http://localhost:8080
+  host: http://localhost:8080
+  client-name: PortalBackend
+  client-id: 090de64bbf77d3c11abd158643ffa3c68574ca5fa470346f2eefd51de615ecfc
+  client-secret: 54b82ee69632ed5c6098773468f252c056b8d61b969f14ae7ba23d3ab2da6de9
+  redirect-uri: http://localhost:8000/gitlab/redirect
+  auth-uri-code: ${gitlab.host}/oauth/authorize?client_id=${gitlab.client-name}&redirect_uri=${gitlab.redirect-uri}&response_type=code&state={0}
+  auth-uri-token: ${gitlab.host}/oauth/token?client_id=${gitlab.client-name}&client_secret=${gitlab.client-secret}&code={0}&grant_type=authorization_code

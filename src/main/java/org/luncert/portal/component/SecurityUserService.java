@@ -27,7 +27,7 @@ public class SecurityUserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String account)
     {
-        User user = userRepos.findByAccount(account);
+        User user = userRepos.findAllByAccount(account);
         if (user == null) {
             throw new AuthenticationCredentialsNotFoundException("invalid account");
         }

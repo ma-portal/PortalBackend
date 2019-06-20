@@ -2,6 +2,8 @@ package org.luncert.portal.service;
 
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Objects;
+import java.util.UUID;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -11,7 +13,8 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.luncert.portal.model.mongo.User;
+import org.luncert.portal.exceptions.GitlabServiceError;
+import org.luncert.portal.exceptions.NoCachedResourceError;
 import org.luncert.portal.util.IOHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,8 +37,16 @@ public class GitlabService {
         long createdAt;
     }
 
-    @Value("${gitlab.server.uri}")
-    private String GITLAB_SERVER_URI;
+    @Data
+    @JsonSerialize
+    @JsonDeserialize
+    private static class Resource {
+        String resourceUri;
+        UUID uuid;
+    }
+
+    @Value("${gitlab.auth-uri-token}")
+    private String GITLAB_AUTH_TOKEN;
 
     @Autowired
     private StringRedisTemplate redis;
@@ -43,41 +54,78 @@ public class GitlabService {
     @Autowired
     private UserService userService;
 
-    private static final String REDIS_KEY_SUFFIX = "/gitlab/access-token";
+    private static final String KEY_AUTH_DETAILS_SUFFIX = "/gitlab/auth-details";
+    private static final String KEY_REQ_RES_SUFFIX = "/gitlab/request-resource";
 
-    private AuthDetails getAuthDetails() throws Exception {
+    public boolean authorized() {
         String account = userService.getCurrentAccount();
-        String raw = redis.opsForValue().get(account + REDIS_KEY_SUFFIX);
-        if (raw != null) {
-            AuthDetails authDetails = JSONObject.parseObject(raw, AuthDetails.class);
-            // TODO: what is refresh_token create for?
-            return authDetails;
+        if (account == null) {
+            return false;
+        }
+        String raw = redis.opsForValue().get(account + KEY_AUTH_DETAILS_SUFFIX);
+        return raw != null;
+    }
+
+    /**
+     * 
+     * @param uri
+     * @return state
+     */
+    public String cacheRequestResource(String uri) {
+        Objects.requireNonNull(uri, "parameter uuid must be non-null");
+
+        String account = userService.getCurrentAccount();
+        Objects.requireNonNull(account, "user not authorized");
+
+        Resource res = new Resource();
+        res.setResourceUri(uri);
+        res.setUuid(UUID.randomUUID());
+        redis.opsForValue().set(account + KEY_REQ_RES_SUFFIX, JSONObject.toJSONString(res));
+
+        return res.getUuid().toString();
+    }
+
+    public String getCachedResource(UUID uuid) throws GitlabServiceError {
+        Objects.requireNonNull(uuid, "parameter uuid must be non-null");
+
+        String account = userService.getCurrentAccount();
+        Objects.requireNonNull(account, "user not authorized");
+
+        String raw = redis.opsForValue().get(account + KEY_REQ_RES_SUFFIX);
+        if (raw == null) {
+            throw new NoCachedResourceError(account);
+        }
+        Resource res = JSONObject.parseObject(raw, Resource.class);
+        if (res.getUuid().equals(uuid)) {
+            return res.getResourceUri();
         } else {
-            // TODO: how to disable password modification of Gitlab
-            User user = userService.queryUser(account);
-            try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-                HttpPost req = new HttpPost(MessageFormat.format(
-                    "{}/oauth/token?grant_type=password&username={}&password={}",
-                        GITLAB_SERVER_URI, account, user.getPassword()));
-                CloseableHttpResponse rep = httpClient.execute(req);
-                int statusCode = rep.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
-                    byte[] repBody = IOHelper.read(rep.getEntity().getContent());
-                    AuthDetails authDetails = JSONObject.parseObject(repBody, AuthDetails.class);
-                    redis.opsForValue().set(account + REDIS_KEY_SUFFIX, new String(repBody));
-                    return authDetails;
-                } else {
-                    throw new Exception("request for access token failed, status code: " + statusCode);
-                }
-            }
+            throw new GitlabServiceError("resource uuid not matched");
         }
     }
 
-    public void fetchAccessToken() {
-        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
-            
-        } catch (IOException e) {
+    public void updateAuthDetails(String code) throws GitlabServiceError, UnsupportedOperationException, IOException {
+        Objects.requireNonNull(code, "parameter code must be non-null");
+        
+        String account = userService.getCurrentAccount();
+        Objects.requireNonNull(account, "user not authorized");
 
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost req = new HttpPost(MessageFormat.format(GITLAB_AUTH_TOKEN, code));
+            CloseableHttpResponse rep = httpClient.execute(req);
+            int statusCode = rep.getStatusLine().getStatusCode();
+            if (statusCode == 200) {
+                byte[] repBody = IOHelper.read(rep.getEntity().getContent());
+
+                try {
+                    JSONObject.parseObject(repBody, AuthDetails.class);
+                } catch (Exception e) {
+                    throw new GitlabServiceError(e);
+                }
+
+                redis.opsForValue().set(account + KEY_AUTH_DETAILS_SUFFIX, new String(repBody));
+            } else {
+                throw new GitlabServiceError("request for access token failed, status code: " + statusCode);
+            }
         }
     }
 

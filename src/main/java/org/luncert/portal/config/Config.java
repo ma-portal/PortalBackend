@@ -27,13 +27,16 @@ public class Config implements WebMvcConfigurer {
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         FastJsonHttpMessageConverter fastJsonConverter = new FastJsonHttpMessageConverter();
+        
         FastJsonConfig conf = new FastJsonConfig();
         conf.setCharset(Charset.forName("UTF-8"));
         conf.setDateFormat("yyyyMMdd HH:mm:ssS");
         fastJsonConverter.setFastJsonConfig(conf);
+
         List<MediaType> list = new LinkedList<>();
         list.add(MediaType.APPLICATION_JSON_UTF8);
         fastJsonConverter.setSupportedMediaTypes(list);
+        
         converters.add(fastJsonConverter);
     }
 

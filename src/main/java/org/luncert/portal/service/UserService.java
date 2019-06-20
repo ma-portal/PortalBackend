@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,8 +38,10 @@ public class UserService {
     private MongoTemplate mongoTemplate;
 
     public String getCurrentAccount() {
-        return org.springframework.security.core.userdetails.User.class.cast
-        (SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth == null ? null :
+            org.springframework.security.core.userdetails.User.class.cast
+        (auth.getPrincipal()).getUsername();
     }
 
     public User queryUser(String account) {

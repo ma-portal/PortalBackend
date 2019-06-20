@@ -123,7 +123,8 @@ public class UserController {
     }
 
     @GetMapping("/project")
-    public void getProject() {
+    public String getProject() {
+        return "ok";
     }
 
     @GetMapping("/gitlab/redirect")
