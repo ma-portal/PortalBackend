@@ -1,9 +1,8 @@
 # Tasks
 
-## June-14
-
 * avatar:
   * ~~get avatar using account~~
   * ~~sign in~~
-  * ~~get profile~~
+  * ~~get proe~~
   * get projects
+  * modify Gitlab's hostname in docker

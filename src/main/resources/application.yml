@@ -18,3 +18,7 @@ gitlab:
   redirect-uri: http://localhost:8000/gitlab/redirect
   auth-uri-code: ${gitlab.host}/oauth/authorize?client_id=${gitlab.client-name}&redirect_uri=${gitlab.redirect-uri}&response_type=code&state={0}
   auth-uri-token: ${gitlab.host}/oauth/token?client_id=${gitlab.client-name}&client_secret=${gitlab.client-secret}&code={0}&grant_type=authorization_code
+  api:
+    projects: ${gitlab.host}/api/v4/projects
+    project-members: ${gitlab.host}/api/v4/projects/{0}/members
+    project-commits: ${gitlab.host}/api/v4/projects/{0}/repository/commits
