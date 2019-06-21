@@ -15,7 +15,7 @@ public interface StaticResourceService {
      * 
      * @param fileName
      * @param data
-     * @return resource uri
+     * @return resource uri or resource id
      */
     String save(String fileName, byte[] data) throws Exception;
 
@@ -23,7 +23,7 @@ public interface StaticResourceService {
      * 
      * @param fileName
      * @param in
-     * @return resource uri
+     * @return resource uri or resource id
      * @throws IOException
      */
     default String save(String fileName, InputStream in) throws Exception {
@@ -34,7 +34,7 @@ public interface StaticResourceService {
     /**
      * 
      * @param file
-     * @return resource uri
+     * @return resource uri or resource id
      */
     default String save(MultipartFile file) throws Exception {
         return save(file.getOriginalFilename(),
@@ -43,23 +43,23 @@ public interface StaticResourceService {
 
     /**
      * 
-     * @param resId
+     * @param resIdentifier resource uri or resource id
      * @return true if find a resource with specified resId
      */
-    boolean exists(String resId);
+    boolean exists(String resIdentifier);
 
     /**
      * 
-     * @param resId
+     * @param resIdentifier resource uri or resource id
      * @return output stream
      */
-    byte[] get(String resId);
+    byte[] get(String resIdentifier);
 
     /**
      * 
-     * @param resId
+     * @param resIdentifier resource uri or resource id
      * @return true if deleting successfully
      */
-    void delete(String resId);
+    void delete(String resIdentifier);
 
 }

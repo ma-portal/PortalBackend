@@ -3,8 +3,12 @@ package org.luncert.portal.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.text.MessageFormat;
 import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -12,6 +16,7 @@ import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.User;
 import org.luncert.portal.model.mongo.User.Role;
 import org.luncert.portal.repos.mongo.UserRepos;
+import org.luncert.portal.service.StaticResourceService;
 import org.luncert.portal.service.UserService;
 import org.luncert.portal.util.NormalUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +40,12 @@ public class UserController {
     @Autowired
     private UserRepos userRepos;
 
+    @Autowired
+    private StaticResourceService resourceService;
+
     /**
      * 不需要授权
+     * 
      * @param account
      * @return
      */
@@ -49,10 +58,26 @@ public class UserController {
 
     /**
      * 图片会被上传到另一个微服务，然后这边只需要更新avatar_url
+     * 
+     * @throws Exception
      */
     @PostMapping("/avatar")
-    public void updateAvatar() {
+    public ResponseEntity<JSONObject> updateAvatar(HttpServletRequest req, MultipartFile file) {
+        JSONObject ret = new JSONObject();
+        try {
+            String resId = resourceService.save(file);
+            String resUrl = MessageFormat.format("http://{0}:{1}/static-resource/{2}",
+                                req.getServerName(), req.getServerPort(), resId);
+            User user = userService.getCurrentUser();
+            user.setAvatar(resUrl);
+            userRepos.save(user);
 
+            ret.put("avatar", resUrl);
+            return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            ret.put("errmsg", NormalUtil.throwableToString(e));
+            return new ResponseEntity<>(ret, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/profile")

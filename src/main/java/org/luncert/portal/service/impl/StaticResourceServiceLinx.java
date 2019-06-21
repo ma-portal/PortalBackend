@@ -3,26 +3,30 @@ package org.luncert.portal.service.impl;
 import org.luncert.portal.service.StaticResourceService;
 import org.springframework.stereotype.Service;
 
+/**
+ * TODO: implementation
+ */
 @Service
 public class StaticResourceServiceLinx implements StaticResourceService {
 
     @Override
     public String save(String fileName, byte[] data) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean exists(String resId) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public byte[] get(String resId) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void delete(String resId) {
+        throw new UnsupportedOperationException();
     }
 
 }
