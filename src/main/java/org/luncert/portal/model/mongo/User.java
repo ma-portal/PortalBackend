@@ -30,8 +30,6 @@ public class User implements Serializable {
     ObjectId id;
     
     private String account;
-
-    @JsonIgnore
     private String password;
     private Set<Role> roles;
     private String realName;

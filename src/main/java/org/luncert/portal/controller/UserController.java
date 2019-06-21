@@ -35,11 +35,24 @@ public class UserController {
     @Autowired
     private UserRepos userRepos;
 
+    /**
+     * 不需要授权
+     * @param account
+     * @return
+     */
     @GetMapping("/avatar/{account}")
     public JSONObject getAvatar(@PathVariable("account") String account) {
         JSONObject json = new JSONObject();
         json.put("avatar", userService.getAvatar(account));
         return json;
+    }
+
+    /**
+     * 图片会被上传到另一个微服务，然后这边只需要更新avatar_url
+     */
+    @PostMapping("/avatar")
+    public void updateAvatar() {
+
     }
 
     @GetMapping("/profile")

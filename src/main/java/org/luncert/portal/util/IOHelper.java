@@ -62,7 +62,9 @@ public class IOHelper {
             response.setHeader("Access-Control-Max-Age", "3600");  
         }
         // content
-        response.setContentType(contentType);
+        if (contentType != null) {
+            response.setContentType(contentType);
+        }
         response.setContentLength(data.length);
         // output
         OutputStream outputStream = new BufferedOutputStream(response.getOutputStream());

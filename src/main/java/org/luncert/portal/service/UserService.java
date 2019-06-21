@@ -39,9 +39,15 @@ public class UserService {
 
     public String getCurrentAccount() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth == null ? null :
-            org.springframework.security.core.userdetails.User.class.cast
-        (auth.getPrincipal()).getUsername();
+        if (auth == null) {
+            return null;
+        }
+
+        Object obj = auth.getPrincipal();
+        if (obj instanceof org.springframework.security.core.userdetails.User) {
+            return org.springframework.security.core.userdetails.User.class
+                .cast(obj).getUsername();
+        } else return null;
     }
 
     public User queryUser(String account) {

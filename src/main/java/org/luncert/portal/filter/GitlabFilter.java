@@ -16,15 +16,13 @@ import org.luncert.portal.service.GitlabService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 /**
  * 这个filter应该在security的filter之后被调用
  */
-@Component
 @Order(Integer.MAX_VALUE)
 @WebFilter(filterName = "GitlabFilter",
-    urlPatterns = {"/user/project/**", "/stdio/project/**"})
+    urlPatterns = {"/user/project/*", "/stdio/project/*"})
 public class GitlabFilter implements Filter {
 
     @Value("${gitlab.auth-uri-code}")

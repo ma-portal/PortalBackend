@@ -61,6 +61,9 @@ public class GitlabService {
     private static final String KEY_AUTH_DETAILS_SUFFIX = "/gitlab/auth-details";
     private static final String KEY_REQ_RES_SUFFIX = "/gitlab/request-resource";
 
+    /**
+     * TODO: check expiring time
+     */
     public boolean authorized() {
         String account = userService.getCurrentAccount();
         if (account == null) {
