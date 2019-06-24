@@ -50,12 +50,24 @@ public class UserService {
         } else return null;
     }
 
-    public User queryUser(String account) {
-        return userRepos.findByAccount(account);
+    /**
+     * 
+     * @param account
+     * @param containsPassword
+     * @return
+     */
+    public User queryUser(String account, boolean containsPassword) {
+        return containsPassword ? userRepos.findAllByAccount(account)
+            : userRepos.findByAccount(account);
     }
 
-    public User getCurrentUser() {
-        return queryUser(getCurrentAccount());
+    /**
+     * 
+     * @param containsPassword
+     * @return
+     */
+    public User getCurrentUser(boolean containsPassword) {
+        return queryUser(getCurrentAccount(), containsPassword);
     }
 
     @Autowired
@@ -81,15 +93,16 @@ public class UserService {
             handler.avatarList.get(0) : "";
     }
 
-    public void updateAccess(String account) {
+    public void updateAccess() {
         mongoTemplate.updateFirst(
-            new BasicQuery("{account: '" + account + "'}"),
+            new BasicQuery("{account: '" + getCurrentAccount() + "'}"),
             new BasicUpdate("{$set: {lastAccess: " + System.currentTimeMillis() + "}}"),
             User.class);
     }
 
-    public void updateProfile(User user, String data) throws Exception {
+    public void updateProfile(String data) throws Exception {
         JSONObject updates = JSONObject.parseObject(data);
+        User user = getCurrentUser(true);
         for (String key : updates.keySet()) {
             switch(key) {
             case "password":
@@ -102,9 +115,6 @@ public class UserService {
                 break;
             case "joinTime":
                 user.setJoinTime(updates.getLong(key));
-                break;
-            case "lastAccess":
-                user.setLastAccess(updates.getLong(key));
                 break;
             case "tags":
                 JSONArray tags = updates.getJSONArray(key);
@@ -125,10 +135,8 @@ public class UserService {
             case "phone":
                 user.setPhone(updates.getString(key));
                 break;
-            case "avatar":
-                user.setAvatar(updates.getString(key));
-                break;
             default:
+                // lastAccess, roles, avatar
                 throw new Exception("update forbidden to field: " + key);
             }
         }

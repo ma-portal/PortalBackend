@@ -50,10 +50,16 @@ public class UserController {
      * @return
      */
     @GetMapping("/avatar/{account}")
-    public JSONObject getAvatar(@PathVariable("account") String account) {
+    public ResponseEntity<JSONObject> getAvatar(@PathVariable("account") String account) {
         JSONObject json = new JSONObject();
-        json.put("avatar", userService.getAvatar(account));
-        return json;
+        String avatarUri = userService.getAvatar(account);
+        if (avatarUri == null) {
+            json.put("errmsg", "invalid account");
+            return new ResponseEntity<>(json, HttpStatus.NOT_FOUND);
+        } else {
+            json.put("avatar", avatarUri);
+            return new ResponseEntity<>(json, HttpStatus.OK);
+        }
     }
 
     /**
@@ -62,13 +68,13 @@ public class UserController {
      * @throws Exception
      */
     @PostMapping("/avatar")
-    public ResponseEntity<JSONObject> updateAvatar(HttpServletRequest req, MultipartFile file) {
+    public ResponseEntity<JSONObject> updateAvatar(HttpServletRequest req, @RequestParam("avatar") MultipartFile file) {
         JSONObject ret = new JSONObject();
         try {
             String resId = resourceService.save(file);
             String resUrl = MessageFormat.format("http://{0}:{1}/static-resource/{2}",
                                 req.getServerName(), req.getServerPort(), resId);
-            User user = userService.getCurrentUser();
+            User user = userService.getCurrentUser(true);
             user.setAvatar(resUrl);
             userRepos.save(user);
 
@@ -82,36 +88,37 @@ public class UserController {
 
     @GetMapping("/profile")
     public User getProfile() {
-        return userService.getCurrentUser();
+        return userService.getCurrentUser(false);
     }
 
-    @PutMapping
+    @PutMapping("/profile")
     public ResponseEntity<JSONObject> updateProfile(@RequestBody String data) {
-        JSONObject ret = new JSONObject();
         try {
-            userService.updateProfile(userService.getCurrentUser(), data);
+            userService.updateProfile(data);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (Exception e) {
+            JSONObject ret = new JSONObject();
             ret.put("errmsg", NormalUtil.throwableToString(e));
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(ret, HttpStatus.BAD_REQUEST);
         }
     }
 
     @PreAuthorize("hasAuthority('Admin')")
-    @PostMapping("/role/{roleName}")
-    public ResponseEntity<JSONObject> addRole(String tarAccount, @PathVariable("roleName") Role role) {
+    @PutMapping("/role/{roleName}")
+    public ResponseEntity<JSONObject> addRole(@RequestParam("targetAccount") String tarAccount,
+        @PathVariable("roleName") Role role) {
         return updateRoles(tarAccount, role, true);
     }
 
     @PreAuthorize("hasAuthority('Admin')")
     @DeleteMapping("/role/{roleName}")
-    public ResponseEntity<JSONObject> removeRole(String tarAccount, @PathVariable("roleName") Role role) {
+    public ResponseEntity<JSONObject> removeRole(@RequestParam("targetAccount") String tarAccount, @PathVariable("roleName") Role role) {
         return updateRoles(tarAccount, role, false);
     }
 
     private ResponseEntity<JSONObject> updateRoles(String account, Role role, boolean addRole) {
         JSONObject errMsg = new JSONObject();
-        User user = userService.queryUser(account);
+        User user = userService.queryUser(account, true);
         if (user == null) {
             errMsg.put("errmsg", "invalid account");
             return new ResponseEntity<>(errMsg, HttpStatus.BAD_REQUEST);
@@ -146,7 +153,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<JSONObject> addUser(@RequestParam String account) {
         JSONObject json = new JSONObject();
-        User user = userService.queryUser(account);
+        User user = userService.queryUser(account, false);
         if (user != null) {
             json.put("errmsg", "account existed");
             return new ResponseEntity<>(json, HttpStatus.BAD_REQUEST);
@@ -157,16 +164,25 @@ public class UserController {
             json.put("initialPassword", initPwd);
             return new ResponseEntity<>(json, HttpStatus.CREATED);
         }
+    }
 
+    @PreAuthorize("hasAuthority('Admin')")
+    @DeleteMapping
+    public ResponseEntity<JSONObject> deleteUser(@RequestParam String account) {
+        User user = userService.queryUser(account, false);
+        if (user == null) {
+            JSONObject errmsg = new JSONObject();
+            errmsg.put("errmsg", "invalid account");
+            return new ResponseEntity<>(errmsg, HttpStatus.BAD_REQUEST);
+        } else {
+            userRepos.deleteByAccount(account);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
     }
 
     @GetMapping("/project")
     public String getProject() {
         return "ok";
-    }
-
-    @GetMapping("/gitlab/redirect")
-    public void gitlabAuth(String code, String state) {
     }
 
 }

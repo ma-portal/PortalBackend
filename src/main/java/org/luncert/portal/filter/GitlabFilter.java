@@ -16,10 +16,12 @@ import org.luncert.portal.service.GitlabService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /**
  * 这个filter应该在security的filter之后被调用
  */
+@Component
 @Order(Integer.MAX_VALUE)
 @WebFilter(filterName = "GitlabFilter",
     urlPatterns = {"/user/project/*", "/stdio/project/*"})
@@ -40,7 +42,6 @@ public class GitlabFilter implements Filter {
             HttpServletRequest req = (HttpServletRequest) request;
             HttpServletResponse rep = (HttpServletResponse) response;
             String requestUri = req.getRequestURI();
-            //  req.getServerName() + ":" + req.getServerPort() + req.getServletPath();
             String state = gitlabService.cacheRequestResource(requestUri);
             rep.sendRedirect(MessageFormat.format(GITLAB_AUTH_CODE, state));
         } else {

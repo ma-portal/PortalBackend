@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 /**
  * TODO: implementation
  */
+@Deprecated
 @Service
 public class StaticResourceServiceLinx implements StaticResourceService {
 

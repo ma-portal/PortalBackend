@@ -1,6 +1,7 @@
 package org.luncert.portal.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -24,12 +25,15 @@ public class GitlabController {
     private GitlabService gitlabService;
 
     @GetMapping("/redirect")
-    public ResponseEntity<Object> redirect(String code, String state,
+    public ResponseEntity<Object> redirect(
+        @RequestParam("code") String code,
+        @RequestParam("state") String state,
         HttpServletResponse response) throws IOException {
         try {
+            gitlabService.updateAuthDetails(code);
             String requestUri = gitlabService.getCachedResource(UUID.fromString(state));
             response.sendRedirect(requestUri);
-            return null;
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (GitlabServiceError e) {
             return new ResponseEntity<>(NormalUtil.throwableToString(e),
                 HttpStatus.INTERNAL_SERVER_ERROR);

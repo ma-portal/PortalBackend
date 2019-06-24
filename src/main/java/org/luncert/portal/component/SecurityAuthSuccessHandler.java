@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.luncert.portal.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -22,8 +21,7 @@ public class SecurityAuthSuccessHandler implements AuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse rep, Authentication auth)
             throws IOException, ServletException {
-        User user = (User) auth.getPrincipal();
-        userService.updateAccess(user.getUsername());
+        userService.updateAccess();
         
         rep.setHeader("Content-Type", "application/json;charset=UTF-8");
         rep.setHeader("Access-Control-Allow-Origin", "*");

@@ -21,4 +21,6 @@ public interface UserRepos extends MongoRepository<User, ObjectId> {
 
     User findAllByAccount(String account);
 
+    void deleteByAccount(String account);
+
 }
