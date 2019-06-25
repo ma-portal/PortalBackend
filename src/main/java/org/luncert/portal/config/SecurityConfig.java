@@ -2,6 +2,7 @@ package org.luncert.portal.config;
 
 import org.luncert.portal.component.SecurityAuthFailureHandler;
 import org.luncert.portal.component.SecurityAuthSuccessHandler;
+import org.luncert.portal.component.SecuritySignoutSuccessHandler;
 import org.luncert.portal.component.SecurityUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +37,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
     @Autowired
     private SecurityAuthFailureHandler authFailureHandler;
 
+    @Autowired
+    private SecuritySignoutSuccessHandler signoutSuccessHandler;
+
     @Override
 	protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
@@ -54,9 +58,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
                 .usernameParameter("account")
                 .passwordParameter("password")
                 .successHandler(authSuccessHandler)
-                .failureHandler(authFailureHandler);
+                .failureHandler(authFailureHandler)
+            .and()
+                .logout()
+                .logoutUrl("/user/signout")
+                // .logoutSuccessUrl(logoutSuccessUrl)
+                .logoutSuccessHandler(signoutSuccessHandler)
+                ;
         
-        http.sessionManagement(); // https://blog.csdn.net/u013435893/article/details/79704970
+        // https://blog.csdn.net/u013435893/article/details/79704970
+        // http.sessionManagement();
 	}
 
     @Bean

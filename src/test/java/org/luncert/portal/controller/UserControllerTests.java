@@ -1,10 +1,12 @@
-package org.luncert.portal.model.controller;
+package org.luncert.portal.controller;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -14,7 +16,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.luncert.portal.model.mongo.User;
+import org.luncert.portal.service.GitlabService;
 import org.luncert.portal.service.UserService;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +47,9 @@ public class UserControllerTests {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GitlabService gitlabService;
 
     @Test
     public void testSignin() throws Exception {
@@ -71,10 +82,11 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateAvatar() throws Exception {
+        MockHttpSession session = authorize();
         MockMultipartFile file = new MockMultipartFile("avatar", "avatar.jpg", MediaType.IMAGE_JPEG_VALUE,
                 this.getClass().getResourceAsStream("avatar.jpg"));
         ResultActions resultActions = mockMvc
-                .perform(MockMvcRequestBuilders.multipart("/user/avatar").file(file).session(authorize()));
+                .perform(MockMvcRequestBuilders.multipart("/user/avatar").file(file).session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isAccepted());
 
         MvcResult result = resultActions.andReturn();
@@ -85,7 +97,8 @@ public class UserControllerTests {
 
     @Test
     public void testGetProfile() throws Exception {
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/user/profile").session(authorize()));
+        MockHttpSession session = authorize();
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/user/profile").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
@@ -103,51 +116,103 @@ public class UserControllerTests {
 
     @Test
     public void testUpdateRole() throws Exception {
+        MockHttpSession session = authorize();
+
         // add role
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.put("/user/role/{roleName}", "Admin")
-                .param("targetAccount", "test").session(authorize()));
+                .param("targetAccount", "test").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isAccepted());
 
         // remove role
         resultActions = mockMvc.perform(MockMvcRequestBuilders.delete("/user/role/{roleName}", "Admin")
-                .param("targetAccount", "test").session(authorize()));
+                .param("targetAccount", "test").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isAccepted());
     }
 
     @Test
     public void testManageUser() throws Exception {
+        MockHttpSession session = authorize();
+
         // add user
-        ResultActions resultActions = mockMvc
-                .perform(MockMvcRequestBuilders.post("/user").param("account", "test+").session(authorize()));
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/user")
+                .param("account", "test+").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isCreated());
 
         // delete user
-        resultActions = mockMvc
-                .perform(MockMvcRequestBuilders.delete("/user").param("account", "test+").session(authorize()));
+        resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.delete("/user")
+                .param("account", "test+").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
+    private static final String GITLAB_USERNAME = "root";
+    private static final String GITLAB_PASSWORD = "Luncert428";
+
     /**
-     * This test is not accompleted
+     * To run this test, you need:
+     * <ul>
+     * <li>install chromedriver and expose it as an enviroment variable
+     * Download Portal: http://chromedriver.storage.googleapis.com/index.html</li>
+     * <li>create an gitlab account</li>
+     * </ul>
      * @throws Exception
      */
     @Test
     public void testGetProject() throws Exception {
+        MockHttpSession session = authorize();
+
         // this request will be interupted by GitlabFilter
-        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/user/project").session(authorize()));
+        ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/user/project").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().is3xxRedirection());
         String location = resultActions.andReturn().getResponse().getHeader("Location");
         Assert.assertNotNull("location should be non-null", location);
+        String redirectUriToGitlabController = substractParam(location, "redirect_uri");
+        
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        WebDriver driver = new ChromeDriver(options);
+        driver.get(location);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
-        // send auth code to GitlabController
-        String state = substractParam(location, "state");
-        Assert.assertNotNull("state should be non-null", state);
-        // resultActions = mockMvc.perform(
-        //     MockMvcRequestBuilders.get("/gitlab/redirect?code={code}&state={state}", null, state)
-        //         .session(authorize()));
-        // resultActions.andExpect(MockMvcResultMatchers.status().isOk());
+        // login to Gitlab
+        WebElement elem = driver.findElement(By.id("user_login"));
+        elem.sendKeys(GITLAB_USERNAME);
+        elem = driver.findElement(By.id("user_password"));
+        elem.sendKeys(GITLAB_PASSWORD);
+        elem = driver.findElement(By.name("commit"));
+        elem.click(); // click on login
 
-        // GitlabController will invoke GitlabService to retrive access token with auth code, and redirect user to the real page he requests.
+        // this step is not mandatory
+        List<WebElement> elems = driver.findElements(By.name("commit"));
+        if (elems.size() == 2) {
+            elems.get(1).click(); // click on Authorize
+        }
+
+        // wait until authorization finished
+        String tmp;
+        while (!(tmp = driver.getCurrentUrl()).startsWith(redirectUriToGitlabController)) {
+            Thread.sleep(500);
+        }
+        redirectUriToGitlabController = tmp;
+
+        // redirect to GitlabController
+
+        resultActions = mockMvc.perform(MockMvcRequestBuilders.get(redirectUriToGitlabController).session(session));
+        resultActions.andExpect(MockMvcResultMatchers.status().is3xxRedirection());
+        String redirectUriToResource = resultActions.andReturn().getResponse().getHeader("Location");
+        Assert.assertNotNull("location should be non-null", location);
+
+        // request for resource /user/project
+        resultActions = mockMvc.perform(MockMvcRequestBuilders.get(redirectUriToResource).session(session));
+        resultActions.andExpect(MockMvcResultMatchers.status().isOk());
+        System.out.println(resultActions.andReturn().getResponse().getContentAsByteArray());
+        // TODO:
+        resultActions.andExpect(MockMvcResultMatchers.content().string("ok"));
+
+        // clear
+        driver.close();
+        gitlabService.logout("admin");
     }
 
     private String substractParam(String url, String name) throws MalformedURLException {

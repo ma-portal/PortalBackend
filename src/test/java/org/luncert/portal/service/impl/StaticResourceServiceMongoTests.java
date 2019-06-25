@@ -1,4 +1,4 @@
-package org.luncert.portal.model.service.impl;
+package org.luncert.portal.service.impl;
 
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;

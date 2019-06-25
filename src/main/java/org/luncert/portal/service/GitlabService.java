@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.luncert.portal.exceptions.GitlabServiceError;
@@ -120,7 +121,7 @@ public class GitlabService {
         Objects.requireNonNull(account, "user not authorized");
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            HttpGet req = new HttpGet(MessageFormat.format(GITLAB_AUTH_TOKEN, code));
+            HttpPost req = new HttpPost(MessageFormat.format(GITLAB_AUTH_TOKEN, code));
             CloseableHttpResponse rep = httpClient.execute(req);
             int statusCode = rep.getStatusLine().getStatusCode();
             if (statusCode == 200) {
@@ -138,6 +139,19 @@ public class GitlabService {
             }
         }
     }
+
+    /**
+     * clear Gitlab's credential cached in Redis
+     * @param account this method will be invoked in SecuritySignoutSuccessHandler, so that it's not possible to get current account via SecurityContextHolder
+     */
+    public void logout(String account) {
+        Objects.requireNonNull(account, "user not authorized");
+
+        redis.delete(account + KEY_AUTH_DETAILS_SUFFIX);
+        redis.delete(account + KEY_REQ_RES_SUFFIX);
+    }
+
+    // Gitlab API
 
     @Value("${gitlab.api.projects")
     private String GITLAB_API_PROJECTS;

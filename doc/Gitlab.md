@@ -43,10 +43,10 @@ Reference: https://docs.gitlab.com/ee/api/oauth2.html
 ```
 理论上redirect_uri应该是你的应用提供的用来接收授权码的接口，也就是说在第三方server完成用户认证后会由第三方server通过这个接口将授权码传给你。
 ```
-/oauth/redirect?code=1234567890&state={YOUR_UNIQUE_STATE_HASH}
+GET /oauth/redirect?code=1234567890&state={YOUR_UNIQUE_STATE_HASH}
 ```
 接下来你就可以通过授权码去请求access token了：
 ```
-/oauth/token?client_id={APP_ID}&client_secret={APP_SECRET}&code={AUTH_CODE}&grant_type=authorization_code&redirect_uri={REDIRECT_URI}
+POST /oauth/token?client_id={APP_ID}&client_secret={APP_SECRET}&code={AUTH_CODE}&grant_type=authorization_code&redirect_uri={REDIRECT_URI}
 ```
 在此过程中你可能会遇到```The redirect url included is not valid```的问题，参考：https://blog.csdn.net/weixin_40161254/article/details/89971109

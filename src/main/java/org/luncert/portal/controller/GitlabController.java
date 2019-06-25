@@ -33,7 +33,7 @@ public class GitlabController {
             gitlabService.updateAuthDetails(code);
             String requestUri = gitlabService.getCachedResource(UUID.fromString(state));
             response.sendRedirect(requestUri);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return null;
         } catch (GitlabServiceError e) {
             return new ResponseEntity<>(NormalUtil.throwableToString(e),
                 HttpStatus.INTERNAL_SERVER_ERROR);

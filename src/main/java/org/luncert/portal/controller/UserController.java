@@ -16,6 +16,7 @@ import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.User;
 import org.luncert.portal.model.mongo.User.Role;
 import org.luncert.portal.repos.mongo.UserRepos;
+import org.luncert.portal.service.GitlabService;
 import org.luncert.portal.service.StaticResourceService;
 import org.luncert.portal.service.UserService;
 import org.luncert.portal.util.NormalUtil;
@@ -42,6 +43,9 @@ public class UserController {
 
     @Autowired
     private StaticResourceService resourceService;
+
+    @Autowired
+    private GitlabService gitlabService;
 
     /**
      * 不需要授权
