@@ -44,13 +44,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 	protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         
-        // http.cors().disable();
-        
         http.authorizeRequests()
-            .antMatchers(HttpMethod.GET, "/user/avatar/*").permitAll()
+            .antMatchers(HttpMethod.GET, "/user/avatar/*", "/static-resource/*").permitAll()
             .anyRequest().authenticated()
             .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-            .and().cors()
             .and().csrf().disable().authorizeRequests()
             .and()
                 .formLogin()

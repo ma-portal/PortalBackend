@@ -76,6 +76,7 @@ public class UserController {
         JSONObject ret = new JSONObject();
         try {
             String resId = resourceService.save(file);
+            // TODO:
             String resUrl = MessageFormat.format("http://{0}:{1}/static-resource/{2}",
                                 req.getServerName(), req.getServerPort(), resId);
             User user = userService.getCurrentUser(true);

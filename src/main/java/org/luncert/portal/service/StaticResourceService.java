@@ -28,6 +28,9 @@ public interface StaticResourceService {
      */
     default String save(String fileName, InputStream in) throws Exception {
         byte[] data = IOHelper.read(in);
+        if (data.length == 0) {
+            throw new Exception("no data availble for input stream");
+        }
         return save(fileName, data);
     }
 

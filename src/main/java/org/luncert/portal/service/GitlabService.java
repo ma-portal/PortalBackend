@@ -111,7 +111,7 @@ public class GitlabService {
         }
     }
 
-    @Value("${gitlab.auth-uri-token}")
+    @Value("${github.api.token}")
     private String GITLAB_AUTH_TOKEN;
 
     public void updateAuthDetails(String code) throws GitlabServiceError, UnsupportedOperationException, IOException {
@@ -153,7 +153,7 @@ public class GitlabService {
 
     // Gitlab API
 
-    @Value("${gitlab.api.projects")
+    @Value("${github.api.projects")
     private String GITLAB_API_PROJECTS;
 
     /**
@@ -189,7 +189,7 @@ public class GitlabService {
         throw new UnsupportedOperationException("This method is not needed for now.");
     }
 
-    @Value("${gitlab.api.project-members")
+    @Value("${github.api.project-members")
     private String GITLAB_API_PROJECT_MEMBERS;
 
     /**
@@ -222,7 +222,7 @@ public class GitlabService {
         }
     }
 
-    @Value("${gitlab.api.project-commits")
+    @Value("${github.api.project-commits")
     private String GITLAB_API_PROJECT_COMMITS;
 
     /**

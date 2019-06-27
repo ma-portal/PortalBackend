@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 public class GitlabFilter implements Filter {
 
-    @Value("${gitlab.auth-uri-code}")
+    @Value("${github.api.authorize}")
     private String GITLAB_AUTH_CODE;
 
     @Autowired

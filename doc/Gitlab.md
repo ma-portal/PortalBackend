@@ -1,5 +1,7 @@
 # Gitlab
 
+> **Deprecated**
+
 Main References: https://www.jianshu.com/p/080a962c35b6
 
 ## 用docker安装Gitlab
