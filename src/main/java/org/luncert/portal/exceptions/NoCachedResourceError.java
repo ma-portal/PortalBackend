@@ -1,6 +1,6 @@
 package org.luncert.portal.exceptions;
 
-public class NoCachedResourceError extends GitlabServiceError {
+public class NoCachedResourceError extends GithubServiceError {
 
     private static final long serialVersionUID = 1L;
 

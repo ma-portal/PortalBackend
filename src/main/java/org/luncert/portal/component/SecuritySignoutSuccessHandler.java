@@ -6,7 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.luncert.portal.service.GitlabService;
+import org.luncert.portal.service.GithubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 public class SecuritySignoutSuccessHandler implements LogoutSuccessHandler {
 
     @Autowired
-    private GitlabService gitlabService;
+    private GithubService githubService;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
-        gitlabService.logout(((User) authentication.getPrincipal()).getUsername());
+        githubService.logout(((User) authentication.getPrincipal()).getUsername());
     }
 
 }

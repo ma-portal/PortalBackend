@@ -1,6 +1,6 @@
 package org.luncert.portal.config;
 
-import org.luncert.portal.filter.GitlabFilter;
+import org.luncert.portal.filter.GithubFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,19 +9,19 @@ import org.springframework.context.annotation.Configuration;
 public class FilterConfig {
 
     /**
-     * GitlabFilter, 这个filter应该在security的filter之后被调用
+     * GithubFilter, 这个filter应该在security的filter之后被调用
      */
 
     @Bean
-    public GitlabFilter gitlabFilter() {
-        return new GitlabFilter();
+    public GithubFilter githubFilter() {
+        return new GithubFilter();
     }
     
     @Bean
-	public FilterRegistrationBean<GitlabFilter> testFilterRegistration(GitlabFilter gitlabFilter) {
-		FilterRegistrationBean<GitlabFilter> registration = new FilterRegistrationBean<>(gitlabFilter);
+	public FilterRegistrationBean<GithubFilter> testFilterRegistration(GithubFilter githubFilter) {
+		FilterRegistrationBean<GithubFilter> registration = new FilterRegistrationBean<>(githubFilter);
 		registration.addUrlPatterns("/user/project/*", "/stdio/project/*");
-        registration.setName("GitlabFilter");
+        registration.setName("GithubFilter");
         registration.setOrder(Integer.MAX_VALUE);
 		return registration;
 	}

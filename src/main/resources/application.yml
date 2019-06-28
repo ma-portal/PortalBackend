@@ -11,13 +11,14 @@ spring:
       ddl-auto: update
 
 github:
-  scope: user repos
-  client-id: 090de64bbf77d3c11abd158643ffa3c68574ca5fa470346f2eefd51de615ecfc
-  client-secret: 54b82ee69632ed5c6098773468f252c056b8d61b969f14ae7ba23d3ab2da6de9
-  redirect-uri: http://localhost:8000/gitlab/redirect
+  scope: repo admin:org admin:public_key gist notifications user
+  client-id: b921b0294b501968709f
+  client-secret: 945bc7659236faad4f9fd5b1dde15a671459dce8
+  redirect-uri: http://luncert.cn:18080/github/redirect
   api:
     authorize: https://github.com/login/oauth/authorize?client_id=${github.client-id}&redirect_uri=${github.redirect-uri}&scope=${github.scope}&state={0}
     token: https://github.com/login/oauth/access_token?client_id=${github.client-id}&client_secret=${github.client-secret}&redirect_uri=${github.redirect-uri}&code={0}&state={1}
-    projects: https://github.com/api/v4/projects
-    project-members: https://github.com/api/v4/projects/{0}/members
-    project-commits: https://github.com/api/v4/projects/{0}/repository/commits
+    # ---------------------------
+    commits: https://api.github.com/repos/{0}/{1}/commits
+    repositories: https://api.github.com/user/repos
+    weekly-commit-count: https://api.github.com/repos/{0}/{1}/stats/participation

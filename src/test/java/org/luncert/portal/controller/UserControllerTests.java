@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -16,11 +15,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.luncert.portal.model.mongo.User;
-import org.luncert.portal.service.GitlabService;
+import org.luncert.portal.service.GithubService;
 import org.luncert.portal.service.UserService;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +49,7 @@ public class UserControllerTests {
     private UserService userService;
 
     @Autowired
-    private GitlabService gitlabService;
+    private GithubService githubService;
 
     @Test
     public void testSignin() throws Exception {
@@ -149,9 +146,6 @@ public class UserControllerTests {
         resultActions.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
-    private static final String GITLAB_USERNAME = "root";
-    private static final String GITLAB_PASSWORD = "Luncert428";
-
     /**
      * To run this test, you need:
      * <ul>
@@ -162,10 +156,10 @@ public class UserControllerTests {
      * @throws Exception
      */
     @Test
-    public void testGetProject() throws Exception {
+    public void testGithubAuthorization() throws Exception {
         MockHttpSession session = authorize();
 
-        // this request will be interupted by GitlabFilter
+        // this request will be interupted by GithubFilter
         ResultActions resultActions = mockMvc.perform(MockMvcRequestBuilders.get("/user/project").session(session));
         resultActions.andExpect(MockMvcResultMatchers.status().is3xxRedirection());
         String location = resultActions.andReturn().getResponse().getHeader("Location");
@@ -173,24 +167,25 @@ public class UserControllerTests {
         String redirectUriToGitlabController = substractParam(location, "redirect_uri");
         
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
+        // options.addArguments("--headless");
         WebDriver driver = new ChromeDriver(options);
         driver.get(location);
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
+        /*
         // login to Gitlab
-        WebElement elem = driver.findElement(By.id("user_login"));
-        elem.sendKeys(GITLAB_USERNAME);
-        elem = driver.findElement(By.id("user_password"));
-        elem.sendKeys(GITLAB_PASSWORD);
+        WebElement elem = driver.findElement(By.id("login_field"));
+        elem.sendKeys(GITHUB_USERNAME);
+        elem = driver.findElement(By.id("password"));
+        elem.sendKeys(GITHUB_PASSWORD);
         elem = driver.findElement(By.name("commit"));
         elem.click(); // click on login
 
-        // this step is not mandatory
         List<WebElement> elems = driver.findElements(By.name("commit"));
         if (elems.size() == 2) {
             elems.get(1).click(); // click on Authorize
         }
+        */
 
         // wait until authorization finished
         String tmp;
@@ -215,7 +210,7 @@ public class UserControllerTests {
 
         // clear
         driver.close();
-        gitlabService.logout("admin");
+        githubService.logout("admin");
     }
 
     private String substractParam(String url, String name) throws MalformedURLException {
