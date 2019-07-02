@@ -18,9 +18,9 @@ import lombok.Data;
 @Document(collection = "User")
 public class User implements Serializable {
 
-    public enum Role {
-        Admin,
-        Normal
+    public static enum Role {
+        ADMIN,
+        NORMAL
     }
 
     private static final long serialVersionUID = -7479078315947463787L;

@@ -170,7 +170,7 @@ public class GithubService {
     @Value("${github.api.commits}")
     private String GITHUB_API_COMMITS;
 
-    public int getCommitsCount(String owner, String repo)
+    public int countCommit(String owner, String repo)
             throws ClientProtocolException, IOException, GithubServiceError {
         HttpGet req = new HttpGet(MessageFormat.format(GITHUB_API_COMMITS, owner, repo)
             + "/author=" + owner);
@@ -191,7 +191,7 @@ public class GithubService {
     @Value("${github.api.repositories}")
     private String GITHUB_API_REPOS;
 
-    public List<Repository> getAllRepos() throws ClientProtocolException, IOException, GithubServiceError {
+    public List<Repository> listRepositories() throws ClientProtocolException, IOException, GithubServiceError {
         HttpGet req = new HttpGet(GITHUB_API_REPOS);
         addAuthHeader(req);
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
@@ -219,7 +219,7 @@ public class GithubService {
      * @throws IOException
      * @throws GithubServiceError
      */
-    public List<Integer> getWeeklyCommitCount(String owner, String repo) throws ClientProtocolException, IOException, GithubServiceError {
+    public List<Integer> countWeeklyCommit(String owner, String repo) throws ClientProtocolException, IOException, GithubServiceError {
         HttpGet req = new HttpGet(MessageFormat.format(
             GITHUB_WEEKLY_COMMIT_COUNT, owner, repo
         ));

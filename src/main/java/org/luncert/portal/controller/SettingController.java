@@ -7,6 +7,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/setting")
 public class SettingController {
 
-    
 
 }

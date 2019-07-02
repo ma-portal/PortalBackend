@@ -15,7 +15,6 @@ import com.alibaba.fastjson.JSONObject;
 import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.User;
 import org.luncert.portal.model.mongo.User.Role;
-import org.luncert.portal.repos.mongo.UserRepos;
 import org.luncert.portal.service.StaticResourceService;
 import org.luncert.portal.service.UserService;
 import org.luncert.portal.util.NormalUtil;
@@ -36,9 +35,6 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private UserRepos userRepos;
 
     @Autowired
     private StaticResourceService resourceService;
@@ -77,7 +73,7 @@ public class UserController {
                                 req.getServerName(), req.getServerPort(), resId);
             User user = userService.getCurrentUser(true);
             user.setAvatar(resUrl);
-            userRepos.save(user);
+            userService.createUser(user);
 
             ret.put("avatar", resUrl);
             return new ResponseEntity<>(ret, HttpStatus.ACCEPTED);
@@ -130,14 +126,14 @@ public class UserController {
                     errMsg.put("errmsg", "role exists");
                 } else {
                     roles.add(role);
-                    userRepos.save(user);
+                    userService.updateUser(user);
                 }
             } else {
                 if (!roles.contains(role)) {
                     errMsg.put("errmsg", "role not exists");
                 } else {
                     roles.remove(role);
-                    userRepos.save(user);
+                    userService.updateUser(user);
                 }
             }
             return new ResponseEntity<>(errMsg,
@@ -176,7 +172,7 @@ public class UserController {
             errmsg.put("errmsg", "invalid account");
             return new ResponseEntity<>(errmsg, HttpStatus.BAD_REQUEST);
         } else {
-            userRepos.deleteByAccount(account);
+            userService.deleteUser(user);
             return new ResponseEntity<>(HttpStatus.OK);
         }
     }

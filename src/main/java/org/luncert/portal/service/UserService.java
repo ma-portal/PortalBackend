@@ -11,7 +11,7 @@ import com.mongodb.MongoException;
 import org.bson.Document;
 import org.luncert.portal.model.mongo.User;
 import org.luncert.portal.model.mongo.User.Role;
-import org.luncert.portal.repos.mongo.UserRepos;
+import org.luncert.portal.repository.mongo.UserRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class UserService {
     private static Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    private UserRepos userRepos;
+    private UserRepo userRepo;
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -50,6 +50,18 @@ public class UserService {
         } else return null;
     }
 
+    public void createUser(User user) {
+        userRepo.save(user);
+    }
+
+    public void updateUser(User user) {
+        userRepo.save(user);
+    }
+
+    public void deleteUser(User user) {
+        userRepo.deleteByAccount(user.getAccount());
+    }
+
     /**
      * 
      * @param account
@@ -57,8 +69,8 @@ public class UserService {
      * @return
      */
     public User queryUser(String account, boolean containsPassword) {
-        return containsPassword ? userRepos.findAllByAccount(account)
-            : userRepos.findByAccount(account);
+        return containsPassword ? userRepo.findAllByAccount(account)
+            : userRepo.findByAccount(account);
     }
 
     /**
@@ -77,9 +89,9 @@ public class UserService {
         User user = User.builder()
             .account(account)
             .password(passwordEncoder.encode(password))
-            .roles(Collections.singleton(Role.Normal))
+            .roles(Collections.singleton(Role.NORMAL))
             .build();
-        userRepos.save(user);
+        userRepo.save(user);
     }
 
     public String getAvatar(String account) {

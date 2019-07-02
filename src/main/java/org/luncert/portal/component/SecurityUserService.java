@@ -2,7 +2,7 @@ package org.luncert.portal.component;
 
 import org.luncert.portal.model.mongo.User;
 import org.luncert.portal.model.mongo.User.Role;
-import org.luncert.portal.repos.mongo.UserRepos;
+import org.luncert.portal.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,16 +18,15 @@ import java.util.Set;
 public class SecurityUserService implements UserDetailsService {
 
     @Autowired
-    private UserRepos userRepos;
+    private UserService userService;
 
     /**
      * 授权的时候是对角色授权，而认证的时候应该基于资源，而不是角色，因为资源是不变的，而用户的角色是会变的
      */
 
     @Override
-    public UserDetails loadUserByUsername(String account)
-    {
-        User user = userRepos.findAllByAccount(account);
+    public UserDetails loadUserByUsername(String account) {
+        User user = userService.queryUser(account, true);
         if (user == null) {
             throw new AuthenticationCredentialsNotFoundException("invalid account");
         }

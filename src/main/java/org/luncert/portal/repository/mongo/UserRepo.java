@@ -1,4 +1,4 @@
-package org.luncert.portal.repos.mongo;
+package org.luncert.portal.repository.mongo;
 
 import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.User;
@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepos extends MongoRepository<User, ObjectId> {
+public interface UserRepo extends MongoRepository<User, ObjectId> {
 
     /**
      * 不返回密码

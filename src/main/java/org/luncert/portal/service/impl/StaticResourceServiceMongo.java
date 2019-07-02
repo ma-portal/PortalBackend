@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.bson.types.ObjectId;
 import org.luncert.portal.model.mongo.StaticResource;
-import org.luncert.portal.repos.mongo.StaticResourceRepos;
+import org.luncert.portal.repository.mongo.StaticResourceRepo;
 import org.luncert.portal.service.StaticResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -17,7 +17,7 @@ import lombok.Data;
 public class StaticResourceServiceMongo implements StaticResourceService {
 
     @Autowired
-    private StaticResourceRepos repos;
+    private StaticResourceRepo repos;
 
     @Override
     public String save(String fileName, byte[] data) {
